@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
 )
 
 // TestAudienceSourceSpellings pins every name MDBList has been seen to use for

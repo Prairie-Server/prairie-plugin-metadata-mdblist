@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
 )
 
 // jawsFixturePath is a real captured MDBList response. Every rating-scale
@@ -97,15 +97,15 @@ func (a *fakeAPI) client(apiKey string) *Client {
 //
 // Pinned from testdata/movie_jaws.json:
 //
-//	imdb      value 8.1  score 81  -> rating_imdb        8.1  (Silo scale 0-10)
-//	tmdb      value 76   score 76  -> rating_tmdb        7.6  (Silo scale 0-10)
-//	tomatoes  value 97   score 97  -> rating_rt_critic   97   (Silo scale 0-100)
+//	imdb      value 8.1  score 81  -> rating_imdb        8.1  (Prairie scale 0-10)
+//	tmdb      value 76   score 76  -> rating_tmdb        7.6  (Prairie scale 0-10)
+//	tomatoes  value 97   score 97  -> rating_rt_critic   97   (Prairie scale 0-100)
 //	audience  not present          -> rating_rt_audience unset
 //
 // IMDb publishes out of 10 so its "value" passes straight through, while
 // TMDB's "value" is already a percentage and has to be divided by ten. The
 // fixture also carries metacritic 87, trakt 78, letterboxd 8/80 and
-// rogerebert 4, which Silo has no column for; asserting each of the four
+// rogerebert 4, which Prairie has no column for; asserting each of the four
 // fields exactly is therefore also the check that none of those leaked into a
 // column that is not theirs.
 func TestRatingsPinnedToJawsFixture(t *testing.T) {
@@ -197,9 +197,9 @@ func TestRatingScaleConversionPerSource(t *testing.T) {
 			want:    metadata.Ratings{IMDB: 8.1, TMDB: 7.6},
 		},
 		{
-			// Silo has no column for these, and the host drops any ratings key
+			// Prairie has no column for these, and the host drops any ratings key
 			// it does not recognise, so they must not be mapped anywhere.
-			name: "sources silo cannot store are ignored entirely",
+			name: "sources prairie cannot store are ignored entirely",
 			ratings: `[{"source":"metacritic","value":87,"score":87},` +
 				`{"source":"metacriticuser","value":null,"score":null},` +
 				`{"source":"trakt","value":78,"score":78},` +
@@ -543,7 +543,7 @@ func TestGetMetadataRouteSelection(t *testing.T) {
 			wantPath:    "/tmdb/movie/578",
 		},
 		{
-			name:        "silo series maps to the mdblist show path",
+			name:        "prairie series maps to the mdblist show path",
 			providerIDs: map[string]string{"tmdb": "1396"},
 			itemType:    "series",
 			wantPath:    "/tmdb/show/1396",

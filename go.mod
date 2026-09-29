@@ -1,9 +1,9 @@
-module github.com/Silo-Server/silo-plugin-metadata-mdblist
+module github.com/prairie-server/prairie-plugin-metadata-mdblist
 
 go 1.26.0
 
 require (
-	github.com/Silo-Server/silo-plugin-sdk v0.16.1
+	github.com/prairie-server/prairie-plugin-sdk v0.12.1-0.20260928152428-c2f90523e166
 	golang.org/x/time v0.16.0
 	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11

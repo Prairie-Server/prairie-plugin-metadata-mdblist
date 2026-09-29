@@ -9,13 +9,13 @@ import (
 	"sync"
 	"testing"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/metadata"
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/provider"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/provider"
 )
 
 // fixturePath is the same real captured MDBList response the provider tests
@@ -54,7 +54,7 @@ func newServers(t *testing.T, status int, body string) (*runtimeServer, *metadat
 	client.SetBaseURL(api.server.URL)
 
 	rs := &runtimeServer{
-		manifest: &pluginv1.PluginManifest{PluginId: "silo.mdblist"},
+		manifest: &pluginv1.PluginManifest{PluginId: "prairie.mdblist"},
 		client:   client,
 	}
 	return rs, &metadataServer{runtime: rs}, api
@@ -366,7 +366,7 @@ func TestGetMetadataWithoutExternalIDReturnsEmpty(t *testing.T) {
 
 // TestGetMetadataMapsFailuresToStatuses covers the failure contract at the RPC
 // boundary: an unknown title is an empty item, and every reason MDBList cannot
-// answer is the gRPC status Silo's bulk enrichment pass reads it by.
+// answer is the gRPC status Prairie's bulk enrichment pass reads it by.
 func TestGetMetadataMapsFailuresToStatuses(t *testing.T) {
 	t.Parallel()
 
@@ -753,7 +753,7 @@ func TestManifestContract(t *testing.T) {
 		t.Fatalf("loadManifest() returned error: %v", err)
 	}
 
-	if got, want := manifest.GetPluginId(), "silo.mdblist"; got != want {
+	if got, want := manifest.GetPluginId(), "prairie.mdblist"; got != want {
 		t.Fatalf("plugin_id = %q, want %q", got, want)
 	}
 	if got := manifest.GetChecksum(); got == "" || got == "__CHECKSUM__" {
@@ -782,7 +782,7 @@ func TestManifestContract(t *testing.T) {
 		t.Fatalf("default_priority = %v, want %v (season and episode must stay absent)", priority, wantPriority)
 	}
 
-	// Silo calls an enrichment-only provider only on the provider-ID keys it
+	// Prairie calls an enrichment-only provider only on the provider-ID keys it
 	// declares here. Without them the plugin never runs.
 	lookupIDs, ok := capabilityMetadata["lookup_provider_ids"].([]any)
 	if !ok {
@@ -791,13 +791,13 @@ func TestManifestContract(t *testing.T) {
 	if want := []any{"imdb", "tmdb"}; !reflect.DeepEqual(lookupIDs, want) {
 		t.Fatalf("lookup_provider_ids = %v, want %v", lookupIDs, want)
 	}
-	// Silo's bulk enrichment pass keeps this many lookups in flight, so the
+	// Prairie's bulk enrichment pass keeps this many lookups in flight, so the
 	// client can fill its largest batch (provider.maxBatchSize).
 	if got, want := capabilityMetadata["bulk_lookup_limit"], float64(100); got != want {
 		t.Fatalf("bulk_lookup_limit = %v, want %v", got, want)
 	}
 	// required_external_ids means "all of these" to the markers capability;
-	// declaring it here would suggest a constraint Silo does not apply.
+	// declaring it here would suggest a constraint Prairie does not apply.
 	if _, declared := capabilityMetadata["required_external_ids"]; declared {
 		t.Fatal("capability metadata still declares required_external_ids")
 	}

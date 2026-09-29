@@ -22,7 +22,7 @@ const defaultBaseURL = "https://api.mdblist.com"
 
 // defaultUserAgent identifies the plugin to MDBList, which sits behind
 // Cloudflare; main.go appends the build version.
-const defaultUserAgent = "silo-plugin-metadata-mdblist"
+const defaultUserAgent = "prairie-plugin-metadata-mdblist"
 
 const (
 	defaultTimeout  = 15 * time.Second
@@ -44,8 +44,8 @@ const (
 //
 // A title MDBList does not know resolves to (nil, nil). Every other failure —
 // no key, a rejected key, an exhausted quota, an outage — is an error wrapping
-// one of the sentinels in errors.go, so Silo can tell "nothing to find" from
-// "ask again later". Silo continues a refresh past a provider error, so this
+// one of the sentinels in errors.go, so Prairie can tell "nothing to find" from
+// "ask again later". Prairie continues a refresh past a provider error, so this
 // never fails one. The plugin logs each failed request, and a quota pause
 // once, when it begins.
 //
@@ -290,7 +290,7 @@ func (c *Client) send(ctx context.Context, method, endpoint string, payload []by
 		log.Printf("mdblist: %s unreachable: %s", label, redact(err.Error()))
 		return 0, nil, fmt.Errorf("%w: %s", ErrUnavailable, redact(err.Error()))
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err = io.ReadAll(io.LimitReader(resp.Body, limit))
 	if err != nil {

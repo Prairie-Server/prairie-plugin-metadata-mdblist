@@ -116,7 +116,7 @@ func TestFetchMediaRejectsIncompleteArguments(t *testing.T) {
 
 // TestFetchMediaClassifiesEveryMDBListAnswer is the failure contract at its
 // source: a title MDBList does not know is "no data", and every other failure
-// is an error saying why, so Silo can ask again later instead of recording the
+// is an error saying why, so Prairie can ask again later instead of recording the
 // title as having nothing to find.
 func TestFetchMediaClassifiesEveryMDBListAnswer(t *testing.T) {
 	t.Parallel()

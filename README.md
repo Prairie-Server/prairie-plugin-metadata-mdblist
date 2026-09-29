@@ -1,11 +1,12 @@
-# Silo MDBList plugin
+# MDBList Metadata Plugin for Prairie
 
-Fills in what other metadata providers leave empty: ratings from every source
-MDBList aggregates (IMDb, TMDB, Rotten Tomatoes critic and audience,
-Metacritic, Letterboxd, Trakt, Roger Ebert, MyAnimeList, and MDBList's own
-score), the release certification, the Common Sense Media minimum age, and
-basic facts such as year, release date, runtime, language, genres, and show
-status.
+A [Prairie](https://github.com/prairie-server/prairie-server) metadata plugin
+backed by [MDBList](https://mdblist.com). It fills in what other metadata
+providers leave empty: ratings from every source MDBList aggregates (IMDb,
+TMDB, Rotten Tomatoes critic and audience, Metacritic, Letterboxd, Trakt, Roger
+Ebert, MyAnimeList, and MDBList's own score), the release certification, the
+Common Sense Media minimum age, and basic facts such as year, release date,
+runtime, language, genres, and show status.
 
 ## Why it has to sit below a primary provider
 
@@ -14,7 +15,7 @@ results by design, even though MDBList has a `/search` endpoint. It only looks
 up titles that another provider has already matched, using the IMDb or TMDB ID
 that provider resolved.
 
-Silo runs a library's metadata providers as a priority-ordered chain and merges
+Prairie runs a library's metadata providers as a priority-ordered chain and merges
 the results fill-empty, so the first provider to supply a field keeps it. Put a
 primary provider — TMDB — above MDBList. The primary resolves identity and
 fills the bulk of the record; MDBList then adds the ratings columns the primary
@@ -25,7 +26,7 @@ does not guess, and it does not fall back to searching.
 
 ## What it maps
 
-| MDBList | Silo |
+| MDBList | Prairie |
 | --- | --- |
 | `ratings[source=imdb]` | `rating_imdb` (0-10) |
 | `ratings[source=tmdb]` | `rating_tmdb` (0-10) |
@@ -41,11 +42,11 @@ does not guess, and it does not fall back to searching.
 | `genres` | genres |
 | `status` | show status (shows only; the host normalises the spelling) |
 
-Silo merges a library's providers fill-empty, so every one of these only lands
+Prairie merges a library's providers fill-empty, so every one of these only lands
 where the primary provider left a blank. Genres go to whichever provider
 supplies them first.
 
-Keywords and countries are not sent. Silo adds list fields from every provider
+Keywords and countries are not sent. Prairie adds list fields from every provider
 together instead of filling a blank, so MDBList's would be added to TMDB's on
 every title. Its keywords are slugs (`parent-child-relationship` next to TMDB's
 `parent child relationship`) mixed with MDBList's own tags such as
@@ -84,7 +85,7 @@ Alongside the four flat keys, the ratings Struct carries a `sources` object:
 Keys are `imdb`, `tmdb`, `rt_critic`, `rt_audience`, `metacritic`,
 `metacritic_user`, `trakt`, `letterboxd`, `rogerebert`, `myanimelist`, and
 `mdblist`. Every `score` is 0-100; `votes` is omitted when MDBList has no
-count. Silo servers that predate per-source storage read only number-valued
+count. Prairie servers that predate per-source storage read only number-valued
 keys and skip `sources`, so the plugin sends it to every server version.
 
 The Common Sense age has no typed field in the plugin API, so it rides in the
@@ -93,7 +94,7 @@ host reads.
 
 ## Known limitations
 
-**Requires a Silo server that reads `lookup_provider_ids`.** Silo used to call
+**Requires a Prairie server that reads `lookup_provider_ids`.** Prairie used to call
 a metadata provider only when the item carried an ID of the provider's own,
 which an enrichment-only provider never has. The manifest now declares
 `capabilities[0].metadata.lookup_provider_ids: ["imdb", "tmdb"]`, and servers
@@ -103,7 +104,7 @@ contributes nothing.
 
 **Reports failures as errors, which older servers log as warnings.** The
 manifest also declares `bulk_lookup_limit: 100`, which opts the plugin into
-Silo's bulk enrichment pass, and the plugin reports a spent quota, an outage or
+Prairie's bulk enrichment pass, and the plugin reports a spent quota, an outage or
 a missing key as a gRPC error rather than an empty item (see below). Servers
 with the pass log those errors at debug level. An older server logs one warning
 per item it looks up while no key is saved, the key is rejected, the quota is
@@ -128,7 +129,7 @@ MDBList meters requests per day: 1000 on the free tier, then 10k, 25k, 100k and
 250k by paid tier, resetting at 00:00 UTC. Every tier is also capped at 1000
 reads per fixed five-minute window.
 
-- **Batching.** Silo asks for one item at a time but runs several match workers
+- **Batching.** Prairie asks for one item at a time but runs several match workers
   at once, and its hourly Bulk Metadata Enrichment task keeps 100 lookups in
   flight (the manifest's `bulk_lookup_limit`). Lookups for the same route (IMDb
   or TMDB, movie or show) that arrive within 250 ms of each other go out as one
@@ -145,9 +146,9 @@ reads per fixed five-minute window.
 - **Pacing.** A client-side limiter keeps requests at three a second, under the
   five-minute cap.
 
-A metadata refresh never fails because of MDBList: Silo continues past a
+A metadata refresh never fails because of MDBList: Prairie continues past a
 provider's error. A title MDBList does not know is an empty answer. Every other
-failure is a gRPC status, so Silo can tell "nothing to find" from "ask again
+failure is a gRPC status, so Prairie can tell "nothing to find" from "ask again
 later" and its bulk pass does not file a paused lookup as a title with no data:
 
 | Failure | Status |
@@ -167,3 +168,24 @@ does not log a missing key: it simply stays idle until one is saved.
 make build        # host platform
 make build-all    # linux/amd64, linux/arm64, darwin/arm64
 ```
+
+## Dependency Model
+
+This repository consumes `github.com/prairie-server/prairie-plugin-sdk` as a normal Go module dependency. CI and release builds run with `GOWORK=off` and expect the SDK version in `go.mod` to resolve from the Prairie SDK repository.
+
+For local multi-repository development, use a `go.work` file that points at a
+sibling SDK checkout. Do not commit machine-local filesystem replacements.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Changes to
+lookup routing, field mapping, rating conversion, quota handling, configuration,
+or advertised capabilities should start as an issue.
+
+## Attribution
+
+Ratings and metadata provided by [MDBList](https://mdblist.com).
+
+## License
+
+`prairie-plugin-metadata-mdblist` is licensed under `AGPL-3.0-only`. See [LICENSE](LICENSE).
