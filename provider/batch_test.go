@@ -246,7 +246,7 @@ func TestLoneLookupUsesTheSingleRoute(t *testing.T) {
 		_, _ = io.WriteString(w, movieBody("tt0073195", 578, 8.1))
 	})
 	client := api.client(10 * time.Millisecond)
-	client.SetUserAgent("silo-plugin-metadata-mdblist/1.2.3")
+	client.SetUserAgent("prairie-plugin-metadata-mdblist/1.2.3")
 
 	answers := fetchAll(t, client, "imdb", "tt0073195")
 
@@ -260,7 +260,7 @@ func TestLoneLookupUsesTheSingleRoute(t *testing.T) {
 	if strings.Contains(requests[0].query, "append_to_response") {
 		t.Fatalf("query = %q, want no append_to_response", requests[0].query)
 	}
-	if got, want := requests[0].userAgent, "silo-plugin-metadata-mdblist/1.2.3"; got != want {
+	if got, want := requests[0].userAgent, "prairie-plugin-metadata-mdblist/1.2.3"; got != want {
 		t.Fatalf("User-Agent = %q, want %q", got, want)
 	}
 	if got := imdbRating(answers["tt0073195"]); got != 8.1 {

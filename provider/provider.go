@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
 )
 
 // GetMetadata enriches an item another provider already identified.
@@ -77,7 +77,7 @@ func normalizeTMDbID(value string) string {
 	return strconv.FormatUint(id, 10)
 }
 
-// mdblistMediaType maps Silo's item type onto MDBList's path segment. Seasons
+// mdblistMediaType maps Prairie's item type onto MDBList's path segment. Seasons
 // and episodes are absent on purpose: MDBList works at title level only, and
 // the manifest's default_priority omits them so the host does not ask.
 func mdblistMediaType(itemType string) (string, bool) {
@@ -91,7 +91,7 @@ func mdblistMediaType(itemType string) (string, bool) {
 	}
 }
 
-// resultFromResponse maps one MDBList body onto the fields Silo can store.
+// resultFromResponse maps one MDBList body onto the fields Prairie can store.
 //
 // It deliberately contributes no identity. MDBList's "ids" object is a
 // Trakt-derived, community-edited mapping, and the host merges whatever a
@@ -183,8 +183,8 @@ func cleanLabels(values []string) []string {
 }
 
 // audienceSources are the names MDBList uses for the Rotten Tomatoes audience
-// score. The legacy mdblist.com/api host says "tomatoesaudience" (Silo-Server
-// #694), third-party clients of api.mdblist.com read "popcorn", and the API's
+// score. The legacy mdblist.com/api host says "tomatoesaudience" (upstream
+// server issue #694), third-party clients of api.mdblist.com read "popcorn", and the API's
 // own ratings endpoint calls the source "audience". No captured response pins
 // which one this endpoint sends, so all three are accepted.
 var audienceSources = map[string]bool{
@@ -193,7 +193,7 @@ var audienceSources = map[string]bool{
 	"tomatoesaudience": true,
 }
 
-// applyRatings fills Silo's four rating columns. This is the one conversion in
+// applyRatings fills Prairie's four rating columns. This is the one conversion in
 // the plugin that corrupts data silently when it is wrong, so every case below
 // is pinned to testdata/movie_jaws.json by TestRatingsPinnedToJawsFixture.
 //
@@ -270,7 +270,7 @@ var valueScales = map[string]float64{
 	metadata.RatingSourceRogerEbert: 25,
 }
 
-// ratingSourceNames maps MDBList's source names onto Silo's keys.
+// ratingSourceNames maps MDBList's source names onto Prairie's keys.
 var ratingSourceNames = map[string]string{
 	"imdb":             metadata.RatingSourceIMDB,
 	"tmdb":             metadata.RatingSourceTMDB,

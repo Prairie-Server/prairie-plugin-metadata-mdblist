@@ -1,4 +1,4 @@
-.PHONY: build build-all test lint clean
+.PHONY: build test lint clean
 
 BINARY=plugin
 PLATFORMS=linux/amd64 linux/arm64 darwin/arm64

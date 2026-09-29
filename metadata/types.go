@@ -20,7 +20,7 @@ type MetadataRequest struct {
 	ContentType string // "movie" or "series"
 }
 
-// Ratings maps onto Silo's four rating columns, which the host reads from the
+// Ratings maps onto Prairie's four rating columns, which the host reads from the
 // plugin's ratings Struct under the keys "imdb" and "tmdb" (0-10) and
 // "rt_critic" and "rt_audience" (0-100). Any other key is ignored host side.
 // The per-source conversion that produces these lives in provider.applyRatings.
@@ -31,7 +31,7 @@ type Ratings struct {
 	RTAudience float64
 }
 
-// Rating source keys used in MetadataResult.RatingSources. They are Silo's
+// Rating source keys used in MetadataResult.RatingSources. They are Prairie's
 // names, not MDBList's: the host stores them verbatim, so they stay stable even
 // if MDBList renames a source (it already spells the Rotten Tomatoes audience
 // score three different ways).

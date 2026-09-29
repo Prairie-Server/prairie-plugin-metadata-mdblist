@@ -2,7 +2,7 @@ package provider
 
 import "errors"
 
-// Lookup failures. Silo has to tell each of these from "MDBList has nothing
+// Lookup failures. Prairie has to tell each of these from "MDBList has nothing
 // for this title": its bulk enrichment pass records an empty answer and does
 // not ask about the title again for weeks, while every failure below means
 // "ask again later". main.go maps each to a gRPC status. Errors carry detail

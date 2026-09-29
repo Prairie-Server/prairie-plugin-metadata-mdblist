@@ -1,4 +1,4 @@
-// Command plugin is the MDBList metadata provider for Silo.
+// Command plugin is the MDBList metadata provider for Prairie.
 //
 // It is enrichment only. It never identifies an item: Search returns nothing,
 // and GetMetadata works purely from the IMDb or TMDB ID a higher-priority
@@ -19,11 +19,11 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/metadata"
-	"github.com/Silo-Server/silo-plugin-metadata-mdblist/provider"
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
-	publicmanifest "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/manifest"
-	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/runtime"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/provider"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
+	publicmanifest "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/manifest"
+	"github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/runtime"
 )
 
 // version is set at build time via -ldflags "-X main.version=...".
@@ -78,7 +78,7 @@ func (s *metadataServer) GetMetadata(ctx context.Context, req *pluginv1.GetMetad
 	return &pluginv1.GetMetadataResponse{Item: metadataItemFromResult(result, req.GetItemType())}, nil
 }
 
-// lookupStatus maps a lookup failure to the gRPC status Silo reads it by. The
+// lookupStatus maps a lookup failure to the gRPC status Prairie reads it by. The
 // statuses follow the host's contract for bulk enrichment providers: every
 // status but INTERNAL means "MDBList cannot answer right now, ask again later",
 // and INTERNAL means this one title's answer was unusable. A cancelled or
@@ -153,7 +153,7 @@ func main() {
 // newClient builds the MDBList client with a User-Agent naming this build.
 func newClient() *provider.Client {
 	client := provider.NewClient()
-	userAgent := "silo-plugin-metadata-mdblist"
+	userAgent := "prairie-plugin-metadata-mdblist"
 	if version != "" {
 		userAgent += "/" + version
 	}
