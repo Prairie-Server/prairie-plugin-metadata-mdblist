@@ -20,7 +20,8 @@ metadata orchestration belongs in
 
 Use the Go version declared in `go.mod`. A local `go.work` may point at a sibling
 SDK checkout while developing both repositories, but committed code and CI must
-resolve the tagged SDK dependency with `GOWORK=off`. Never commit provider
+resolve the SDK version pinned in `go.mod` (a release tag or a pseudo-version
+of the SDK's `main` branch) with `GOWORK=off`. Never commit provider
 credentials issued to you, captured private data, or a local filesystem
 `replace` directive.
 
