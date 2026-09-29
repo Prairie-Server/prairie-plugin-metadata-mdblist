@@ -1,4 +1,4 @@
-.PHONY: build test lint clean
+.PHONY: build test lint clean build-all
 
 BINARY=plugin
 PLATFORMS=linux/amd64 linux/arm64 darwin/arm64
@@ -16,6 +16,7 @@ lint:
 
 clean:
 	rm -f $(BINARY)
+	rm -rf dist
 
 build-all:
 	@for platform in $(PLATFORMS); do \
