@@ -20,7 +20,8 @@ metadata orchestration belongs in
 
 Use the Go version declared in `go.mod`. A local `go.work` may point at a sibling
 SDK checkout while developing both repositories, but committed code and CI must
-resolve the tagged SDK dependency with `GOWORK=off`. Never commit provider
+resolve the SDK version pinned in `go.mod` (a release tag or a pseudo-version
+of the SDK's `main` branch) with `GOWORK=off`. Never commit provider
 credentials issued to you, captured private data, or a local filesystem
 `replace` directive.
 
@@ -32,15 +33,21 @@ GOWORK=off go vet ./...
 GOWORK=off go build ./...
 GOWORK=off go run . manifest >/dev/null
 gofmt -l .
+GOWORK=off golangci-lint run ./...
+GOWORK=off go test ./... -count=1 -covermode=atomic -coverprofile=coverage.out
+./scripts/check-coverage.sh coverage.out
 ```
 
 The manifest command must exit successfully. `gofmt -l .` should print nothing;
 if it reports unrelated pre-existing drift, none of the Go files touched by your
 change may appear in the output. Do not add to the output, and report what
-remains. CI enforces a 95% statement coverage floor
+remains. CI runs golangci-lint v2.14.0 and enforces a 95% statement coverage floor
 (`scripts/check-coverage.sh`). Add focused coverage for lookup routing, field
 and rating mapping, batching, quota pauses, and upstream error handling when
 those behaviors change.
+Locally, `golangci-lint run` checks the whole repository, while CI reports only
+issues new in the pull request (`only-new-issues`), so the local run is the
+stricter of the two.
 
 ## Open the pull request
 
