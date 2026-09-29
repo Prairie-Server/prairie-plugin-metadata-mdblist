@@ -290,7 +290,7 @@ func (c *Client) send(ctx context.Context, method, endpoint string, payload []by
 		log.Printf("mdblist: %s unreachable: %s", label, redact(err.Error()))
 		return 0, nil, fmt.Errorf("%w: %s", ErrUnavailable, redact(err.Error()))
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err = io.ReadAll(io.LimitReader(resp.Body, limit))
 	if err != nil {

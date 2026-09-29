@@ -19,15 +19,23 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
-	"github.com/prairie-server/prairie-plugin-metadata-mdblist/provider"
 	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 	publicmanifest "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/manifest"
 	"github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/runtime"
+
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/provider"
 )
 
 // version is set at build time via -ldflags "-X main.version=...".
 var version string
+
+// Seams swapped by tests; production always uses the real functions.
+var (
+	osExecutable = os.Executable
+	osReadFile   = os.ReadFile
+	runtimeServe = runtime.Serve
+)
 
 //go:embed manifest.json
 var manifestJSON []byte
@@ -142,7 +150,7 @@ func main() {
 		client:   newClient(),
 	}
 
-	runtime.Serve(runtime.ServeConfig{
+	runtimeServe(runtime.ServeConfig{
 		Servers: runtime.CapabilityServers{
 			Runtime:          rs,
 			MetadataProvider: &metadataServer{runtime: rs},
@@ -171,11 +179,11 @@ func loadManifest() (*pluginv1.PluginManifest, error) {
 		manifest.Version = version
 	}
 
-	executablePath, err := os.Executable()
+	executablePath, err := osExecutable()
 	if err != nil {
 		return nil, fmt.Errorf("resolve executable path: %w", err)
 	}
-	binaryData, err := os.ReadFile(executablePath)
+	binaryData, err := osReadFile(executablePath)
 	if err != nil {
 		return nil, fmt.Errorf("read executable %q: %w", executablePath, err)
 	}
