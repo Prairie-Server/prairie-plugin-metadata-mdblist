@@ -1,12 +1,22 @@
-# MDBList Metadata Plugin for Prairie
+# Prairie MDBList plugin
 
-A [Prairie](https://github.com/prairie-server/prairie-server) metadata plugin
-backed by [MDBList](https://mdblist.com). It fills in what other metadata
-providers leave empty: ratings from every source MDBList aggregates (IMDb,
-TMDB, Rotten Tomatoes critic and audience, Metacritic, Letterboxd, Trakt, Roger
-Ebert, MyAnimeList, and MDBList's own score), the release certification, the
-Common Sense Media minimum age, and basic facts such as year, release date,
-runtime, language, genres, and show status.
+Fills in what other metadata providers leave empty: IMDb and TMDB ratings, the
+Rotten Tomatoes critic and audience scores, MDBList's own score, the release
+certification, the Common Sense Media minimum age, and basic facts such as
+year, release date, runtime, language, genres, and show status.
+
+Prairie shows the Rotten Tomatoes scores and the MDBList score only after an
+administrator turns them on under Settings > Library & Metadata > Ratings.
+
+MDBList also aggregates Metacritic, Letterboxd, Trakt, Roger Ebert and
+MyAnimeList ratings. The plugin does not pass those on: their owners' terms
+restrict redistribution, and Trakt has blocked MDBList's API access.
+
+Upgrading from 0.4 or earlier: the plugin stops refreshing those scores but
+cannot delete the ones Prairie already stored. A Prairie server that reads
+`rating_sources` hides them, because this plugin no longer declares them. An
+older server keeps showing the last stored scores until they are removed on
+the server.
 
 ## Why it has to sit below a primary provider
 
@@ -32,7 +42,7 @@ does not guess, and it does not fall back to searching.
 | `ratings[source=tmdb]` | `rating_tmdb` (0-10) |
 | `ratings[source=tomatoes]` | `rating_rt_critic` (0-100) |
 | `ratings[source=popcorn\|tomatoesaudience\|audience]` | `rating_rt_audience` (0-100) |
-| every rated source, plus the top-level `score` | `ratings.sources` (0-100 with vote counts; see below) |
+| the four sources above, plus the top-level `score` | `ratings.sources` (0-100 with vote counts; see below) |
 | `certification` | content rating |
 | `age_rating` + `commonsense` | `advisory_age` / `advisory_source` |
 | `year` | year |
@@ -61,9 +71,9 @@ MDBList's `ids` object is read only to match batch answers to requests.
 
 MDBList reports each rating twice: `value` on the source's own scale and
 `score` normalised to 0-100. The scales are not uniform — IMDb's `value` is out
-of 10, TMDB's and Rotten Tomatoes' are out of 100, Letterboxd's is doubled to
-10, Roger Ebert's is out of 4 — so `score` is the input wherever it is present,
-and the per-source conversion is pinned to `provider/testdata/movie_jaws.json`.
+of 10, TMDB's and Rotten Tomatoes' are out of 100 — so `score` is the input
+wherever it is present, and the per-source conversion is pinned to
+`provider/testdata/movie_jaws.json`.
 
 ### Per-source ratings
 
@@ -73,20 +83,24 @@ Alongside the four flat keys, the ratings Struct carries a `sources` object:
 {
   "imdb": 8.1, "tmdb": 7.6, "rt_critic": 97,
   "sources": {
-    "imdb":       {"score": 81, "votes": 673852},
-    "metacritic": {"score": 87, "votes": 21},
-    "letterboxd": {"score": 80, "votes": 876082},
-    "rogerebert": {"score": 100},
-    "mdblist":    {"score": 86}
+    "imdb":      {"score": 81, "votes": 673852},
+    "tmdb":      {"score": 76, "votes": 10114},
+    "rt_critic": {"score": 97, "votes": 102},
+    "mdblist":   {"score": 86}
   }
 }
 ```
 
-Keys are `imdb`, `tmdb`, `rt_critic`, `rt_audience`, `metacritic`,
-`metacritic_user`, `trakt`, `letterboxd`, `rogerebert`, `myanimelist`, and
-`mdblist`. Every `score` is 0-100; `votes` is omitted when MDBList has no
-count. Prairie servers that predate per-source storage read only number-valued
-keys and skip `sources`, so the plugin sends it to every server version.
+Keys are `imdb`, `tmdb`, `rt_critic`, `rt_audience`, and `mdblist`. Every
+`score` is 0-100; `votes` is omitted when MDBList has no count. Prairie servers
+that predate per-source storage read only number-valued keys and skip
+`sources`, so the plugin sends it to every server version.
+
+Prairie names IMDb and TMDB itself. It keeps any other key only if the capability
+declares it, so the manifest lists the other three under
+`capabilities[0].metadata.rating_sources`, each with the short name clients
+show beside the score (`RT`, `RT Audience`, `MDBList`), a longer label, and its
+scale. A server that predates `rating_sources` ignores the declaration.
 
 The Common Sense age has no typed field in the plugin API, so it rides in the
 free-form metadata map under `advisory_age` and `advisory_source`, which the
@@ -168,24 +182,3 @@ does not log a missing key: it simply stays idle until one is saved.
 make build        # host platform
 make build-all    # linux/amd64, linux/arm64, darwin/arm64
 ```
-
-## Dependency Model
-
-This repository consumes `github.com/prairie-server/prairie-plugin-sdk` as a normal Go module dependency. CI and release builds run with `GOWORK=off` and expect the SDK version in `go.mod` to resolve from the Prairie SDK repository.
-
-For local multi-repository development, use a `go.work` file that points at a
-sibling SDK checkout. Do not commit machine-local filesystem replacements.
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Changes to
-lookup routing, field mapping, rating conversion, quota handling, configuration,
-or advertised capabilities should start as an issue.
-
-## Attribution
-
-Ratings and metadata provided by [MDBList](https://mdblist.com).
-
-## License
-
-`prairie-plugin-metadata-mdblist` is licensed under `AGPL-3.0-only`. See [LICENSE](LICENSE).
