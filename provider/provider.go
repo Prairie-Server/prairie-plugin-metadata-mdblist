@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Prairie-Server/prairie-plugin-metadata-mdblist/metadata"
+	"github.com/prairie-server/prairie-plugin-metadata-mdblist/metadata"
 )
 
 // GetMetadata enriches an item another provider already identified.

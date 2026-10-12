@@ -90,7 +90,7 @@ jobs:
 
       - name: Reject committed local SDK replaces
         run: |
-          if grep -Eq '^replace github.com/Prairie-Server/prairie-plugin-sdk => /' go.mod; then
+          if grep -Eq '^replace github.com/prairie-server/prairie-plugin-sdk => /' go.mod; then
             echo "go.mod contains a machine-local prairie-plugin-sdk replace."
             exit 1
           fi
